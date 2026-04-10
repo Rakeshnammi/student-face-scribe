@@ -2,10 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { UserPlus, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useStudents } from "@/context/StudentContext";
+import { useNavigate } from "react-router-dom";
 
 const departments = ["Computer Science", "Electronics", "Mechanical", "Civil", "Electrical"];
 
 export default function AddStudent() {
+  const { addStudent } = useStudents();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "", department: "", semester: "", section: "",
     dateOfBirth: "", gender: "", address: "", guardianName: "", guardianPhone: "",
@@ -17,8 +21,23 @@ export default function AddStudent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Student added successfully! Face enrollment pending.");
+    addStudent({
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      department: form.department,
+      semester: parseInt(form.semester) || 1,
+      section: form.section || "A",
+      dateOfBirth: form.dateOfBirth,
+      gender: (form.gender as "Male" | "Female" | "Other") || "Male",
+      address: form.address,
+      guardianName: form.guardianName,
+      guardianPhone: form.guardianPhone,
+    });
+    toast.success(`${form.firstName} ${form.lastName} added successfully!`);
     setForm({ firstName: "", lastName: "", email: "", phone: "", department: "", semester: "", section: "", dateOfBirth: "", gender: "", address: "", guardianName: "", guardianPhone: "" });
+    navigate("/students");
   };
 
   const inputClass = "w-full px-4 py-2.5 rounded-lg bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-shadow";
@@ -74,7 +93,7 @@ export default function AddStudent() {
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <button type="button" className="px-5 py-2.5 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">Cancel</button>
+          <button type="button" onClick={() => navigate("/students")} className="px-5 py-2.5 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">Cancel</button>
           <button type="submit" className="px-5 py-2.5 rounded-lg text-sm font-medium gradient-accent text-accent-foreground flex items-center gap-2 hover:opacity-90 transition-opacity">
             <UserPlus className="w-4 h-4" /> Add Student
           </button>

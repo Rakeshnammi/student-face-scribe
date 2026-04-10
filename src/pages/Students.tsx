@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Filter, Eye, Pencil, Trash2, ScanFace } from "lucide-react";
-import { mockStudents } from "@/lib/mockData";
+import { useStudents } from "@/context/StudentContext";
 import { Student } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Students() {
+  const { students } = useStudents();
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("All");
   const [selected, setSelected] = useState<Student | null>(null);
 
-  const departments = ["All", ...new Set(mockStudents.map((s) => s.department))];
+  const departments = ["All", ...new Set(students.map((s) => s.department))];
 
-  const filtered = mockStudents.filter((s) => {
+  const filtered = students.filter((s) => {
     const matchSearch = `${s.firstName} ${s.lastName} ${s.studentId}`.toLowerCase().includes(search.toLowerCase());
     const matchDept = deptFilter === "All" || s.department === deptFilter;
     return matchSearch && matchDept;
@@ -23,7 +24,7 @@ export default function Students() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-heading font-bold">Students</h1>
-          <p className="text-muted-foreground mt-1">{mockStudents.length} students enrolled</p>
+          <p className="text-muted-foreground mt-1">{students.length} students enrolled</p>
         </div>
       </div>
 

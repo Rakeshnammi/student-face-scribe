@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Download, Calendar, ScanFace } from "lucide-react";
-import { mockAttendance } from "@/lib/mockData";
+import { Search, Download, ScanFace } from "lucide-react";
+import { useStudents } from "@/context/StudentContext";
 
 export default function AttendanceRecords() {
+  const { attendance } = useStudents();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const filtered = mockAttendance.filter((a) => {
+  const filtered = attendance.filter((a) => {
     const matchSearch = a.studentName.toLowerCase().includes(search.toLowerCase()) || a.studentId.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All" || a.status === statusFilter;
     return matchSearch && matchStatus;
