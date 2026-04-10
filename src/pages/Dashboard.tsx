@@ -1,7 +1,7 @@
-import { Users, UserCheck, UserX, Clock, Camera } from "lucide-react";
+import { Users, UserCheck, Clock, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import StatCard from "@/components/StatCard";
-import { mockStudents, mockAttendance } from "@/lib/mockData";
+import { useStudents } from "@/context/StudentContext";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const weeklyData = [
@@ -12,20 +12,21 @@ const weeklyData = [
   { day: "Fri", present: 38, absent: 12 },
 ];
 
-const deptData = [
-  { name: "CS", value: 35 },
-  { name: "ECE", value: 25 },
-  { name: "Mech", value: 20 },
-  { name: "Civil", value: 20 },
-];
-
 const COLORS = ["hsl(174, 62%, 42%)", "hsl(222, 60%, 18%)", "hsl(38, 92%, 50%)", "hsl(210, 92%, 55%)"];
 
 export default function Dashboard() {
-  const totalStudents = mockStudents.length;
-  const presentToday = mockAttendance.filter((a) => a.status === "Present").length;
-  const lateToday = mockAttendance.filter((a) => a.status === "Late").length;
-  const absentToday = totalStudents - presentToday - lateToday;
+  const { students, attendance } = useStudents();
+
+  const totalStudents = students.length;
+  const presentToday = attendance.filter((a) => a.status === "Present").length;
+  const lateToday = attendance.filter((a) => a.status === "Late").length;
+
+  const deptCounts = students.reduce<Record<string, number>>((acc, s) => {
+    const key = s.department.length > 4 ? s.department.slice(0, 4) : s.department;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const deptData = Object.entries(deptCounts).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="space-y-8">
@@ -38,7 +39,7 @@ export default function Dashboard() {
         <StatCard title="Total Students" value={totalStudents} icon={Users} subtitle="Enrolled & active" trend={{ value: 2.5, positive: true }} />
         <StatCard title="Present Today" value={presentToday} icon={UserCheck} variant="success" subtitle="Checked in" trend={{ value: 5, positive: true }} />
         <StatCard title="Late Today" value={lateToday} icon={Clock} variant="warning" subtitle="After 9:00 AM" />
-        <StatCard title="Face Scans" value={mockAttendance.filter((a) => a.method === "Face Recognition").length} icon={Camera} variant="accent" subtitle="AI verified" />
+        <StatCard title="Face Scans" value={attendance.filter((a) => a.method === "Face Recognition").length} icon={Camera} variant="accent" subtitle="AI verified" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -69,7 +70,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-3 justify-center mt-2">
             {deptData.map((d, i) => (
               <div key={d.name} className="flex items-center gap-1.5 text-xs">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i] }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                 {d.name}
               </div>
             ))}
@@ -80,7 +81,7 @@ export default function Dashboard() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card rounded-xl border border-border p-6">
         <h3 className="font-heading font-semibold text-lg mb-4">Recent Activity</h3>
         <div className="space-y-3">
-          {mockAttendance.slice(0, 5).map((record) => (
+          {attendance.slice(0, 5).map((record) => (
             <div key={record.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">
